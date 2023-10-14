@@ -16,4 +16,5 @@ Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
 Imports:
-  S4Vectors
+  S4Vectors,
+  dplyr
