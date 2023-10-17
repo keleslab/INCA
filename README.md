@@ -12,12 +12,27 @@ Note: Zyg = 0 - Homozygous reference; 1 - Heterozygous; 2 - Unknown; 3 - Homozyg
 
 ## Main Example in the Paper
 
+Variants in the example are in high linkage-disequilibrium with SNP _rs1057868_. INCAscore is computed using the data for RBP _HNRNPK_.
+
 ### Load required data
 
 ```{r}
 directory = 'https://raw.github.com/jduan607/INCA/master'
 
-## HepG2
+## GWAS
+variants = fread(file.path(directory, 'GWAS', 'final_data.txt'))
+variants = variants[LeadSNP=='rs1057868',]
+SW = fread(file.path(directory,'GWAS','seqweaver_results.tsv'))
+
+## DGE
+dge1 = fread('https://www.encodeproject.org/files/ENCFF382MHL/@@download/ENCFF382MHL.tsv')[status=='OK',]
+dge2 = fread('https://www.encodeproject.org/files/ENCFF527KUQ/@@download/ENCFF527KUQ.tsv')[status=='OK',]
+
+## WGS
+wgs1 = fread(file.path(directory,'ENCODE_WGS','HepG2_WGS.txt.gz'))
+wgs2 = fread(file.path(directory,'ENCODE_WGS','K562_WGS.txt.gz'))
+
+## ENCODE - HepG2
 peak1 = fread(file.path(directory,'ENCODE_eCLIP/PeakSignals','HNRNPK_HepG2_PeakSignals.txt.gz'))
 
 exp1.1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Rep1.txt.gz')) 
@@ -27,7 +42,7 @@ ctrl1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Ctr
 rc1.1 = readCountsWRTControl(exp1.1, ctrl1)
 rc1.2 = readCountsWRTControl(exp1.2, ctrl1)
 
-## K562
+## ENCODE - K562
 peak2 = fread(file.path(directory,'ENCODE_eCLIP/PeakSignals','HNRNPK_K562_PeakSignals.txt.gz'))
 
 exp2.1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Rep1.txt.gz')) 
@@ -36,12 +51,35 @@ ctrl2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Ctrl
 
 rc2.1 = readCountsWRTControl(exp2.1, ctrl2)
 rc2.2 = readCountsWRTControl(exp2.2, ctrl2)
+```
 
-## DGE
-dge1 = fread('https://www.encodeproject.org/files/ENCFF382MHL/@@download/ENCFF382MHL.tsv')[status=='OK',]
-dge2 = fread('https://www.encodeproject.org/files/ENCFF527KUQ/@@download/ENCFF527KUQ.tsv')[status=='OK',]
+### (A) ClinVar-quantiled SeqWeaver scores
 
-## WGS
-wgs1 = fread(file.path(directory,'ENCODE_WGS','HepG2_WGS.txt.gz'))
-wgs2 = fread(file.path(directory,'ENCODE_WGS','K562_WGS.txt.gz'))
+```{r}
+variants = scoreClinVarQSW(variants, SW, 'HNRNPK', pathogenic=TRUE)
+```
+
+### (B) eCLIP-seq allelic effects
+
+```{r}
+epg1 = list(list(peaks=peak1, threshold=0.5), 
+            list(counts=rc1.1, peaks=peak1[signalValue_IDR>0,], threshold=0.8),
+            list(counts=rc1.2, peaks=peak1[signalValue_IDR>0,], threshold=0.8))
+
+epg2 = list(list(peaks=peak2, threshold=0.5), 
+            list(counts=rc2.1, peaks=peak2[signalValue_IDR>0,], threshold=0.8),
+            list(counts=rc2.2, peaks=peak2[signalValue_IDR>0,], threshold=0.8))
+
+variants = scoreAllelicEffect(variants, epg1, epg2, c('HepG2','K562'), parallel=TRUE)
+```
+
+### (C) RBP-SNV impact on gene expression
+
+```{r}
+de1 = list(dge1[,.(gene,q_value)], # first element must be DE
+           list(peaks=peak1, threshold=0.5)) 
+de2 = list(dge2[,.(gene,q_value)], 
+           list(peaks=peak2, threshold=0.5))
+
+variants = scoreVarImpactOnGE(variants, de1, de2, c('HepG2','K562'), parallel=TRUE)
 ```
