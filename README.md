@@ -7,3 +7,5 @@ We extracted  the required information (Chr, Pos, Ref, Alt, Zyg) from the VCF fi
   + K562: ENCFF752OAX
     
 The corresponding code can be found in 'ExtractVCFInfo.py'.
+
+Note: Zyg = 1 - Homozygous reference; 2 - Heterozygous; 3 - Unknown; 4 - Homozygous alternative
