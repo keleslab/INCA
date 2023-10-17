@@ -1,6 +1,6 @@
 # INCA
 
-## Whole-genome Sequencing (WGS) data
+## Whole-genome Sequencing (WGS) Data
 
 We extracted  the required information (Chr, Pos, Ref, Alt, Zyg) from the VCF files of WGS in HepG2 and K562 cell lines from the ENCODE project:
   + HepG2: ENCFF713BPG
