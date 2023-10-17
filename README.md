@@ -12,7 +12,7 @@ Note: Zyg = 0 - Homozygous reference; 1 - Heterozygous; 2 - Unknown; 3 - Homozyg
 
 ## Main Example in the Paper
 
-Variants in the example are in high linkage-disequilibrium with SNP _rs1057868_. INCAscore is computed using the data for RBP _HNRNPK_.
+Variants in the example are in high linkage-disequilibrium with the SNP _rs1057868_. INCAscore is computed using the data for the RBP _HNRNPK_.
 
 ### Load required data
 
