@@ -8,4 +8,4 @@ We extracted  the required information (Chr, Pos, Ref, Alt, Zyg) from the VCF fi
     
 The corresponding code can be found in 'ExtractVCFInfo.py'.
 
-Note: Zyg = 1 - Homozygous reference; 2 - Heterozygous; 3 - Unknown; 4 - Homozygous alternative
+Note: Zyg = 0 - Homozygous reference; 1 - Heterozygous; 2 - Unknown; 3 - Homozygous alternative
