@@ -10,11 +10,11 @@ Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 Depends: 
     R (>= 3.6.0),
-    data.table
+    data.table,
+    foreach
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
 Imports:
-  S4Vectors,
-  dplyr
+  S4Vectors
