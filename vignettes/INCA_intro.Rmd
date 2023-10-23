@@ -1,0 +1,120 @@
+---
+title: "An Introduction to INCA"
+author:
+  - name: Jingqi Duan
+  - name: Sunduz Keles
+date: "`r Sys.Date()`"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{INCA}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r eval=TRUE, echo=FALSE}
+suppressWarnings(library(knitr))
+suppressMessages(library(data.table))
+suppressMessages(library(GenomicRanges))
+suppressMessages(library(Rsamtools))
+```
+
+# Introduction
+
+We have developed a pre-computed library containing aligned reads and peak information
+from the [ENCODE eCLIP-seq collection](https://www.encodeproject.org/search/?type=Experiment&control_type!=*&status=released&perturbed=false&assay_title=eCLIP&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&biosample_ontology.term_name=K562&biosample_ontology.term_name=HepG2&assembly=hg19&files.file_type=bed+narrowPeak&files.file_type=bam&assay_slims=RNA+binding) of 223 RBPs in HepG2 and K562 cell lines on the hg19 genome assembly. This library provides convenient access to epigenomic information of variants, offering a more direct view of variant-level information.
+
+This document provides an introduction to the **INCAData** package. The **INCAData** package summarizes epigenomic information of variants, including (i) normalized aligned read counts and (ii) peak signal values from eCLIP-seq (or similar data type, e.g., ChIP-seq). The resulting output files can be further used within the **INCA** pacakge.
+
+# Installation
+
+**INCAData** will be submitted to Bioconductor. Currently, **INCAData** can be downloaded and installed in R by: 
+
+```{r eval=FALSE}
+devtools::install_github('jduan607/INCAData')
+```
+
+**INCAData** depends on the following \R{} packages:
+
+(a) `r CRANpkg("data.table")` is used for reading, writing, and formatting large data.
+
+(b) `r Biocpkg("GenomicRanges")` is used for manipulating genomic intervals and variables defined along a genome
+
+(c) `r Biocpkg("Rsamtools")` is used for manipulating BAM (Sequence Alignment/Map) files.
+
+# Example
+
+We illustrate an example of [eCLIP-seq data targeting HNRNPK in K562 cell line](https://www.encodeproject.org/experiments/ENCSR268ETU/).
+
+Accession | File type | Output type | Isogenic replicated | Genome assembly | ... 
+:---|:---|:---|:---|:---|:---|
+ENCFF525XIM|bam|alignments|1|hg19|...
+ENCFF049KXT|bam|alignments|2|hg19|...
+ENCFF742LSN|bam|alignments|control|hg19|...
+ENCFF448SCQ|bed narrowPeak|peaks|1,2 (IDR)|hg19|...
+ENCFF079MYZ|bed narrowPeak|peaks|1|hg19|...
+ENCFF769QNG|bed narrowPeak|peaks|2|hg19|...
+
+```{r}
+library(INCAData)
+```
+
+## Normalized aligned read counts from ENCODE eCLIP-seq
+
+`summarizeReadCounts` calculates aligned read counts for each variant in the eCLIP-seq (**input**) experiment. The key parameters:
+
+* **input**: Input file name of the BAM file.
+* **scale**: Scaling factor. The default is 1,000,000.
+* **chrom**: Chromosomes. The default is chromosomes 1-22, X, and Y.
+* **output**: Output file name. The default is *NULL*.
+
+If **scale** is a non-zero value, then `summarizeReadCounts` normalizes aligned read counts by dividing the raw read counts by the total number of reads in the sample and then multiplying by **scale**.
+
+```{r, eval=TRUE}
+experiment = 'https://www.encodeproject.org/files/ENCFF525XIM/@@download/ENCFF525XIM.bam'
+
+## Normalized aligned read counts
+ex1.1 = summarizeReadCounts(experiment)
+head(ex1.1)
+
+## Raw aligned read counts
+ex1.2 = summarizeReadCounts(experiment, scale=0)
+head(ex1.2)
+
+## Calculate normalized aligned read counts for specific chromosomes
+#summarizeReadCounts(experiment, chrom=c('chr12','chr13'))
+
+## Save the calculated normalized aligned read counts
+#summarizeReadCounts(experiment, output='SF3B4_K562_NormRC_Rep1.txt.gz')
+```
+
+## Peak signal values from ENCODE eCLIP-seq
+
+`summarizePeakSignals` summarizes peak signal values generated from the "peak calling" in the eCLIP-seq (**input**) experiment. Peak signal values represent the measurement of overall (usually, average) enrichment for each region. Only regions with a p-value less than 0.05 under FDR control are included. The key parameters:
+
+* **input**: Input file name(s) of the narrowPeak BED file.
+* **suffix**: Additional information about each file. The default is *NULL*.
+* **chrom**: Chromosomes. The default is chromosomes 1-22, X, and Y.
+* **output**: Output file name. The default is *NULL*.
+
+```{r, eval=TRUE}
+experiment = c('https://www.encodeproject.org/files/ENCFF448SCQ/@@download/ENCFF448SCQ.bed.gz',
+               'https://www.encodeproject.org/files/ENCFF079MYZ/@@download/ENCFF079MYZ.bed.gz',
+               'https://www.encodeproject.org/files/ENCFF769QNG/@@download/ENCFF769QNG.bed.gz')
+suffix = c('IDR','Rep1','Rep2')
+
+## Peak signal values from multiple replicates
+ex2.1 = summarizePeakSignals(experiment, suffix)
+head(ex2.1)
+
+## Peak signal values from one file
+ex2.2 = summarizePeakSignals(experiment[1])
+head(ex2.2)
+
+## Combine peak signal values for specific chromosomes
+summarizePeakSignals(experiment, suffix, chrom=c('chr12','chr13'))
+
+## Save the combined peak signal values
+#summarizePeakSignals(experiment, suffix, output='SF3B4_K562_PeakSignals.txt.gz')
+```
