@@ -39,8 +39,8 @@ exp1.1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Re
 exp1.2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Rep2.txt.gz')) 
 ctrl1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Ctrl.txt.gz'))
 
-rc1.1 = readCountsWRTControl(exp1.1, ctrl1)
-rc1.2 = readCountsWRTControl(exp1.2, ctrl1)
+rc1.1 = compareRCToControl(exp1.1, ctrl1)
+rc1.2 = compareRCToControl(exp1.2, ctrl1)
 
 ## ENCODE - K562
 peak2 = fread(file.path(directory,'ENCODE_eCLIP/PeakSignals','HNRNPK_K562_PeakSignals.txt.gz'))
@@ -49,8 +49,8 @@ exp2.1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Rep
 exp2.2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Rep2.txt.gz')) 
 ctrl2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Ctrl.txt.gz'))
 
-rc2.1 = readCountsWRTControl(exp2.1, ctrl2)
-rc2.2 = readCountsWRTControl(exp2.2, ctrl2)
+rc2.1 = compareRCToControl(exp2.1, ctrl2)
+rc2.2 = compareRCToControl(exp2.2, ctrl2)
 ```
 
 ### (A) ClinVar-quantiled SeqWeaver scores
