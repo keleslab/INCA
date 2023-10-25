@@ -20,6 +20,6 @@ foreach(i = 1:nrow(target), .combine=c) %dopar% {
     deg = sapply(files[,`File download URL`], function(x) 'gene' %in% fread(x, nrow=1, header=FALSE))
     data = fread(files[deg, `File download URL`])                 
     
-    output = paste(target[[1]][i], target[[2]][i], 'DGE.txt.gz', sep='_')
+    output = paste(target[[1]][i], target[[2]][i], 'DEG.txt.gz', sep='_')
     fwrite(data, file.path(directory,'DEG',output), sep='\t')
 }
