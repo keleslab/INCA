@@ -1,0 +1,20 @@
+Assay type
+	RNA binding
+Assay title
+	eCLIP
+Organism 
+	Homo sapiens
+Biosample
+	K562
+	HepG2
+Genome assembly
+	hg19
+Available file types
+	bam
+	bed narrowPeak
+
+223 results
+
+https://www.encodeproject.org/search/?type=Experiment&control_type!=*&status=released&perturbed=false&assay_title=eCLIP&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&biosample_ontology.term_name=K562&biosample_ontology.term_name=HepG2&assembly=hg19&files.file_type=bed+narrowPeak&files.file_type=bam&assay_slims=RNA+binding
+
+Download selected files
