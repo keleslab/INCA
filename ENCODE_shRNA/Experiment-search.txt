@@ -14,7 +14,7 @@ Genome assembly
 Available file types
 	tsv
 
-438 results
+422 results
 
 https://www.encodeproject.org/search/?type=Experiment&assay_title=shRNA+RNA-seq&assay_slims=Transcription&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&biosample_ontology.term_name=K562&biosample_ontology.term_name=HepG2&assembly=hg19&limit=100&control_type!=*&files.file_type=tsv
 
