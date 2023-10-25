@@ -1,7 +1,6 @@
 #install.packages('/ua/jduan27/GVI/INCAData', repos=NULL, type='source')
 library(INCAData)
 library(doMC)
-library(doParallel)
 cores=detectCores(); registerDoMC(cores=cores)
 
 directory = '/z/Proj/pg_collaboration/RBP-analysis/ENCODE_eCLIP'
