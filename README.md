@@ -75,7 +75,7 @@ peak2 = fread(file.path(directory,'ENCODE_eCLIP/PeakSignals','HNRNPK_K562_PeakSi
 ### (A) ClinVar-quantiled SeqWeaver scores
 
 ```{r}
-variants = scoreClinVarQSW(variants, SW, 'HNRNPK', pathogenic=TRUE)
+variants = scoreClinVarQSW(variants, SW, 'HNRNPK', empirical=1)
 ```
 
 ### (B) eCLIP-seq allelic effects
