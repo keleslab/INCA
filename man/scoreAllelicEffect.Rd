@@ -3,7 +3,7 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
-Score of variants on allelic effects
+Assign scores to variants on allelic effects
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
@@ -15,9 +15,11 @@ scoreAllelicEffect(variants, CellLine1, CellLine2, CellNames, window = 15, paral
 \arguments{
   \item{variants}{
 %%     ~~Describe \code{variants} here~~
+  A data frame of variants containing columns of \var{Chr}, \var{Start}, and \var{End}. If \code{variants} includes \var{INCAscore}, then the score for allelic effect will be added to \var{INCAscore}. If \code{variants} includes \var{AltCellLine}, then the score See more details for \var{AltCellLine} in  \code{\link[INCA]{alignCellGenoToVar}}.
 }
   \item{CellLine1}{
 %%     ~~Describe \code{CellLine1} here~~
+  A list of lists
 }
   \item{CellLine2}{
 %%     ~~Describe \code{CellLine2} here~~
@@ -27,9 +29,11 @@ scoreAllelicEffect(variants, CellLine1, CellLine2, CellNames, window = 15, paral
 }
   \item{window}{
 %%     ~~Describe \code{window} here~~
+  A non-negative integer representing the half-window size, where \eqn{newStart = Start - window} and \eqn{newEnd = End + window}. Default is 15.
 }
   \item{parallel}{
 %%     ~~Describe \code{parallel} here~~
+  A logical value specifying whether or not the computation should be done in parallel. Default is \code{FALSE}. DO NOT set \code{parallel} to \code{TRUE} unless the multicore parallel backend is registered for multiple cores, for example, \code{doMC::registerDoMC()}.
 }
 }
 \details{
@@ -47,6 +51,7 @@ scoreAllelicEffect(variants, CellLine1, CellLine2, CellNames, window = 15, paral
 }
 \author{
 %%  ~~who you are~~
+Jingqi Duan
 }
 \note{
 %%  ~~further notes~~
@@ -58,36 +63,15 @@ scoreAllelicEffect(variants, CellLine1, CellLine2, CellNames, window = 15, paral
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
+epg1 = list(list(peaks=peak1, threshold=0.5),
+            list(counts=rc1.1, peaks=peak1[signalValue_IDR>0,], threshold=0.8),
+            list(counts=rc1.2, peaks=peak1[signalValue_IDR>0,], threshold=0.8))
 
-## The function is currently defined as
-function (variants, CellLine1, CellLine2, CellNames, window = 15,
-    parallel = FALSE)
-{
-    variants = as.data.table(variants)
-    enriched = matrix(0, ncol = 2, nrow = nrow(variants))
-    enriched[varInEnrichedRegion(variants, CellLine1, window,
-        parallel), 1] = 1
-    enriched[varInEnrichedRegion(variants, CellLine2, window,
-        parallel), 2] = 1
-    variants[, "EnrichedRegion"] = as.character(factor(paste(enriched[,
-        1], enriched[, 2], sep = ":"), levels = c("0:0", "0:1",
-        "1:0", "1:1"), labels = c("Neither", CellNames, "Both")))
-    if ("AltCellLine" \%in\% colnames(variants)) {
-        ALT = variants[, AltCellLine] \%in\% CellNames
-    }
-    else {
-        ALT = TRUE
-    }
-    if (!"INCAscore" \%in\% colnames(variants)) {
-        variants[, "INCAscore"] = 0
-    }
-    variants[ALT & EnrichedRegion \%in\% CellNames, `:=`(INCAscore,
-        INCAscore + 1)]
-    return(variants)
-  }
+epg2 = list(list(peaks=peak2, threshold=0.5),
+            list(counts=rc2.1, peaks=peak2[signalValue_IDR>0,], threshold=0.8),
+            list(counts=rc2.2, peaks=peak2[signalValue_IDR>0,], threshold=0.8))
+
+variants = scoreAllelicEffect(variants, epg1, epg2, c('HepG2','K562'), parallel=TRUE)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):

@@ -68,12 +68,6 @@ selectPeaksBySignals = function(peaks, threshold=0.5) {
 
   signal_col = grep('signal(?!.*IDR)', colnames(peaks), ignore.case=TRUE, perl=TRUE) # columns of non-IDR peaks
 
-  if (threshold < 0 | threshold > 1) {
-    message('Invalid threshold. Use default `threshold` = 0.5.')
-    threshold = 0.5
-  }
-
-  peaks = as.data.table(peaks)
   new_peaks= lapply(signal_col, function(x) { ## new non-IDR peaks based on threshold
     cutoff = quantile(peaks[[x]][peaks[[idr_col]]>0], threshold)
     peaks[peaks[[x]]>cutoff, ]
@@ -99,11 +93,6 @@ computeRCQuantile = function(counts, peaks, threshold=0.5, parallel=FALSE) {
     peaks_RC = do.call(c, peaks_RC)
   }
 
-  if (threshold < 0 | threshold > 1) {
-    message('Invalid threshold. Use default `threshold` = 0.5.')
-    threshold = 0.5
-  }
   cutoff = quantile(as.vector(peaks_RC), threshold)
-
   return(cutoff)
 }
