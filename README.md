@@ -10,6 +10,21 @@ The corresponding code can be found in 'ExtractVCFInfo.py'.
 
 Note: Zyg = 0 - Homozygous reference; 1 - Heterozygous; 2 - Unknown; 3 - Homozygous alternative
 
+## Installation
+
+```{r}
+devtools::install_github('keleslab/INCA')
+```
+
+### Parallel backend
+
+Parallel backend is not required to register, but it will reduce computing time. If not registered, set `parallel`=FALSE (as the default).
+
+```{r}
+library(doMC)
+registerDoMC()
+```
+
 ## Main Example in the Paper
 
 Variants in the example are in high linkage-disequilibrium with the SNP _rs1057868_. INCAscore is computed using the data for the RBP _HNRNPK_.
@@ -17,6 +32,8 @@ Variants in the example are in high linkage-disequilibrium with the SNP _rs10578
 ### Load required data
 
 ```{r}
+library(INCA)
+
 directory = 'https://raw.github.com/jduan607/INCA/master'
 
 ## GWAS
@@ -53,15 +70,6 @@ peak2 = fread(file.path(directory,'ENCODE_eCLIP/PeakSignals','HNRNPK_K562_PeakSi
 
 #rc2.1 = compareRCToControl(exp2.1, ctrl2)
 #rc2.2 = compareRCToControl(exp2.2, ctrl2)
-```
-
-### Parallel backend
-
-Parallel backend is not required to register, but it will reduce computing time. If not registered, set `parallel`=FALSE (as the default).
-
-```{r}
-library(doMC)
-registerDoMC()
 ```
 
 ### (A) ClinVar-quantiled SeqWeaver scores
