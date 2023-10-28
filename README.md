@@ -39,7 +39,7 @@ directory = 'https://raw.github.com/jduan607/INCA/master'
 ## GWAS
 variants = fread(file.path(directory, 'GWAS', 'final_data.txt'))
 SW = fread(file.path(directory,'GWAS','seqweaver_results.tsv'))
-SW = SW[,grep('eCLIP',colnames(SW)),with=FALSE]
+SW = SW[,grep('HepG2|K562',colnames(SW)),with=FALSE] # the example focuses on HepG2 and K562
 
 ## DGE
 dge1 = fread('https://www.encodeproject.org/files/ENCFF382MHL/@@download/ENCFF382MHL.tsv')[status=='OK',]
