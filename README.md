@@ -41,9 +41,9 @@ variants = fread(file.path(directory, 'GWAS', 'final_data.txt'))
 SW = fread(file.path(directory,'GWAS','seqweaver_results.tsv'))
 SW = SW[,c(1:8, grep('HepG2|K562',colnames(SW))),with=FALSE] # the example focuses on HepG2 and K562
 
-## DGE
-dge1 =  fread(file.path(path,'ENCODE_shRNA/DEG',paste0(rbp,'_HepG2_DEG.txt.gz')))
-dge2 = read(file.path(path,'ENCODE_shRNA/DEG',paste0(rbp,'_K562_DEG.txt.gz')))
+## DEG
+deg1 = fread(file.path(directory,'ENCODE_shRNA/DEG','HNRNPK_HepG2_DEG.txt.gz'))
+deg2 = fread(file.path(directory,'ENCODE_shRNA/DEG','HNRNPK_K562_DEG.txt.gz'))
 
 ## WGS
 wgs1 = fread(file.path(directory,'ENCODE_WGS','HepG2_WGS.txt.gz'))
@@ -97,10 +97,10 @@ variants = scoreAllelicEffect(variants, epg1, epg2, c('HepG2','K562'), parallel=
 ### (C) RBP-SNV impact on gene expression
 
 ```{r}
-de1 = list(dge1[,.(gene,q_value)], # first element must be DE
+epg1 = list(deg1[,.(gene,q_value)], # first element must be DE
            list(peaks=peak1, threshold=0.5)) 
-de2 = list(dge2[,.(gene,q_value)], 
+epg2 = list(deg2[,.(gene,q_value)], 
            list(peaks=peak2, threshold=0.5))
 # parallel = FALSE if no parallel backend registered
-variants = scoreVarImpactOnGE(variants, de1, de2, c('HepG2','K562'), parallel=TRUE)
+variants = scoreVarImpactOnGE(variants, epg1, epg2, c('HepG2','K562'), parallel=TRUE)
 ```
