@@ -42,17 +42,18 @@ SW = fread(file.path(directory,'GWAS','seqweaver_results.tsv'))
 SW = SW[,c(1:8, grep('HepG2|K562',colnames(SW))),with=FALSE] # the example focuses on HepG2 and K562
 
 ## DGE
-dge1 = fread('https://www.encodeproject.org/files/ENCFF382MHL/@@download/ENCFF382MHL.tsv')[status=='OK',]
-dge2 = fread('https://www.encodeproject.org/files/ENCFF527KUQ/@@download/ENCFF527KUQ.tsv')[status=='OK',]
+dge1 =  fread(file.path(path,'ENCODE_shRNA/DEG',paste0(rbp,'_HepG2_DEG.txt.gz')))
+dge2 = read(file.path(path,'ENCODE_shRNA/DEG',paste0(rbp,'_K562_DEG.txt.gz')))
 
 ## WGS
 wgs1 = fread(file.path(directory,'ENCODE_WGS','HepG2_WGS.txt.gz'))
 wgs2 = fread(file.path(directory,'ENCODE_WGS','K562_WGS.txt.gz'))
 
-## ENCODE - HepG2
+## ENCODE - peak
 peak1 = fread(file.path(directory,'ENCODE_eCLIP/PeakSignals','HNRNPK_HepG2_PeakSignals.txt.gz'))
+peak2 = fread(file.path(directory,'ENCODE_eCLIP/PeakSignals','HNRNPK_K562_PeakSignals.txt.gz'))
 
-# Load if needed
+## ENCODE - read counts (Load if needed)
 #exp1.1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Rep1.txt.gz')) 
 #exp1.2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Rep2.txt.gz')) 
 #ctrl1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Ctrl.txt.gz'))
@@ -60,16 +61,18 @@ peak1 = fread(file.path(directory,'ENCODE_eCLIP/PeakSignals','HNRNPK_HepG2_PeakS
 #rc1.1 = compareRCToControl(exp1.1, ctrl1)
 #rc1.2 = compareRCToControl(exp1.2, ctrl1)
 
-## ENCODE - K562
-peak2 = fread(file.path(directory,'ENCODE_eCLIP/PeakSignals','HNRNPK_K562_PeakSignals.txt.gz'))
-
-# Load if needed
 #exp2.1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Rep1.txt.gz')) 
 #exp2.2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Rep2.txt.gz')) 
 #ctrl2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Ctrl.txt.gz'))
 
 #rc2.1 = compareRCToControl(exp2.1, ctrl2)
 #rc2.2 = compareRCToControl(exp2.2, ctrl2)
+```
+
+### Align genotypes of K562 and HepG2 cell lines to variants
+
+```{r}
+variants = alignCellGenoToVar(variants, wgs1, wgs2, c('HepG2','K562'))
 ```
 
 ### (A) ClinVar-quantiled SeqWeaver scores
