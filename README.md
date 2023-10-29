@@ -98,9 +98,9 @@ variants = scoreAllelicEffect(variants, epg1, epg2, c('HepG2','K562'), parallel=
 
 ```{r}
 epg1 = list(deg1[,.(gene,q_value)], # first element must be DE
-           list(peaks=peak1, threshold=0.5)) 
+           list(peaks=peak1, threshold=1)) 
 epg2 = list(deg2[,.(gene,q_value)], 
-           list(peaks=peak2, threshold=0.5))
+           list(peaks=peak2, threshold=1))
 # parallel = FALSE if no parallel backend registered
-variants = scoreVarImpactOnGE(variants, epg1, epg2, c('HepG2','K562'), parallel=TRUE)
+variants = scoreVarImpactOnGE(variants, epg1, epg2, c('HepG2','K562'))
 ```
