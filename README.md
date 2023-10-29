@@ -54,19 +54,19 @@ peak1 = fread(file.path(directory,'ENCODE_eCLIP/PeakSignals','HNRNPK_HepG2_PeakS
 peak2 = fread(file.path(directory,'ENCODE_eCLIP/PeakSignals','HNRNPK_K562_PeakSignals.txt.gz'))
 
 ## ENCODE - read counts (Load if needed)
-#exp1.1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Rep1.txt.gz')) 
-#exp1.2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Rep2.txt.gz')) 
-#ctrl1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Ctrl.txt.gz'))
+exp1.1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Rep1.txt.gz')) 
+exp1.2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Rep2.txt.gz')) 
+ctrl1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_HepG2_NormRC_Ctrl.txt.gz'))
 
-#rc1.1 = compareRCToControl(exp1.1, ctrl1)
-#rc1.2 = compareRCToControl(exp1.2, ctrl1)
+rc1.1 = compareRCToControl(exp1.1, ctrl1)
+rc1.2 = compareRCToControl(exp1.2, ctrl1)
 
-#exp2.1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Rep1.txt.gz')) 
-#exp2.2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Rep2.txt.gz')) 
-#ctrl2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Ctrl.txt.gz'))
+exp2.1 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Rep1.txt.gz')) 
+exp2.2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Rep2.txt.gz')) 
+ctrl2 = fread(file.path(directory,'ENCODE_eCLIP/NormRC','HNRNPK_K562_NormRC_Ctrl.txt.gz'))
 
-#rc2.1 = compareRCToControl(exp2.1, ctrl2)
-#rc2.2 = compareRCToControl(exp2.2, ctrl2)
+rc2.1 = compareRCToControl(exp2.1, ctrl2)
+rc2.2 = compareRCToControl(exp2.2, ctrl2)
 ```
 
 ### Align genotypes of K562 and HepG2 cell lines to variants
@@ -85,13 +85,17 @@ variants = scoreClinVarQSW(variants, SW, 'HNRNPK', empirical=1)
 
 ```{r}
 epg1 = list(list(peaks=peak1[signalValue_IDR>0,]),
-                list(peaks=peak1, threshold=0.5)) 
-
+            list(peaks=peak1, threshold=0.5), # optional
+            list(counts=rc1.1, peaks=peak1[signalValue_IDR>0,], threshold=c(0.1,0.8)), # optional
+            list(counts=rc1.2, peaks=peak1[signalValue_IDR>0,], threshold=c(0.1,0.8))) # optional
+            
 epg2 = list(list(peaks=peak2[signalValue_IDR>0,]),
-            list(peaks=peak2, threshold=0.5))
+            list(peaks=peak2, threshold=0.5), # optional
+            list(counts=rc2.1, peaks=peak2[signalValue_IDR>0,], threshold=c(0.1,0.8)), # optional
+            list(counts=rc2.2, peaks=peak2[signalValue_IDR>0,], threshold=c(0.1,0.8))) # optional
 
 # parallel = FALSE if no parallel backend registered
-variants = scoreAllelicEffect(variants, epg1, epg2, c('HepG2','K562'), parallel=TRUE)
+variants = scoreAllelicEffect(variants, epg1, epg2, c('HepG2','K562'), window=15, parallel=TRUE)
 ```
 
 ### (C) RBP-SNV impact on gene expression
