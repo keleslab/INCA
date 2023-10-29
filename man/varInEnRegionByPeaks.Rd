@@ -7,7 +7,7 @@ Variants that overlap with the specified peaks
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
-\code{varInEnRegionByPeaks} is used in the \code{\link[INCA]{varInEnrichedRegion}} function. It provides indices of variants that overlap with the specified peaks.
+\code{varInEnRegionByPeaks} is used in the \code{\link[INCA]{varInEnrichedRegion}} function. It quantifies whether variants overlap with the specified peaks.
 }
 \usage{
 varInEnRegionByPeaks(vdata, peaks)
@@ -32,7 +32,7 @@ varInEnRegionByPeaks(vdata, peaks)
 %%  \item{comp1 }{Description of 'comp1'}
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
-A vector of indices of variants that overlap with the specified peaks.
+A binary vector with 1 indicating variants that overlap with the specified peaks and 0 indicating variants that do not overlap.
 }
 \references{
 %% ~put references to the literature/web site here ~

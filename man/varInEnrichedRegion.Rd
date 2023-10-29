@@ -7,7 +7,7 @@ Variants that reside in an enriched region.
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
-\code{varInEnrichedRegion} is used in the \code{\link[INCA]{scoreAllelicEffect}} and \code{\link[INCA]{scoreVarImpactOnGE}} functions. It provides indices of variants that reside in an enriched region.
+\code{varInEnrichedRegion} is used in the \code{\link[INCA]{scoreAllelicEffect}} and \code{\link[INCA]{scoreVarImpactOnGE}} functions. It quantifies whether variants reside in an enriched region.
 }
 \usage{
 varInEnrichedRegion(vdata, input, window = 15, parallel = FALSE)
@@ -28,9 +28,9 @@ varInEnrichedRegion(vdata, input, window = 15, parallel = FALSE)
   }
     \item \itemize{
       \item \var{counts}: A data frame or a list of Rle objects. If \code{counts} is a data frame, it must contain three columns in the order of chromosomes, lengths, and aligned read counts. For more details, refer to \code{\link[INCAData]{summarizeReadCounts}}. If \code{counts} is a list of Rle objects, each list element should be named after the corresponding chromosome, and \var{values} should represent aligned read counts. For more details, refer to \code{\link[S4Vectors]{Rle}}.
-      \item \var{cutoff}: A numeric value of cutoff for aligned read counts. If both \var{cutoff} and \var{peaks} are not provided, the default cutoff of 30 will be used.
+      \item \var{cutoff}: A numeric vector of length 2, representing lower and upper cutoffs for aligned read counts. Variants with read counts exceeding the upper cutoff are considered part of the enriched region, those with read counts below the lower cutoff are considered outside the enriched region, and those in between are classified as unsure. If neither \var{cutoff} nor \var{peaks} is not provided, the default cutoff values of 5 and 15 will be used.
       \item \var{peaks}: Optional. If \var{cutoff} is not provided and \var{peaks} is provided, then \code{computeRCQuantile} will be used to calculate the cutoff.
-      \item \var{threshold}: Optional. If \code{computeRCQuantile} is used to calculate the cutoff, the cutoff will be based on either the provided \var{threshold} or the default threshold of 0.5. For more details, refer to \code{\link[INCA]{computeRCQuantile}}.
+      \item \var{threshold}: Optional. If \code{computeRCQuantile} is used to calculate the cutoff, the cutoff will be based on either the provided \var{threshold} or the default threshold of 0.1 and 0.8. For more details, refer to \code{\link[INCA]{computeRCQuantile}}.
     }
   }}
   \item{window}{
@@ -39,13 +39,13 @@ varInEnrichedRegion(vdata, input, window = 15, parallel = FALSE)
 }
   \item{parallel}{
 %%     ~~Describe \code{parallel} here~~
-  A logical value specifying whether or not the computation should be done in parallel. Default is \code{FALSE}. DO NOT set \code{parallel} to \code{TRUE} unless the multicore parallel backend is registered for multiple cores, for example, \code{doMC::registerDoMC()}.
+  A logical value specifying whether or not the computation should be done in parallel. Default is \code{FALSE}. DO NOT set \code{parallel} to \code{TRUE} unless the multicore parallel backend is registered, for example, \code{doMC::registerDoMC()}.
 }
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 If \var{peaks} is provided in \code{input}, variants are considered to be located in an enriched region if they overlap with the specified peaks.
-If \var{counts} is provided in \code{input}, variants are considered to be located in an enriched region if they have aligned read counts exceeding the provided \var{cutoff} or the default cutoff of 30.
+If \var{counts} is provided in \code{input}, variants are considered to be located in an enriched region if they have aligned read counts exceeding the provided \var{cutoff} or the default cutoff of 5 and 15.
 \code{input} accepts list of lists, allowing enriched regions to be determined using either \var{peaks} or \var{counts} and files from multiple replicates.
 }
 \value{
@@ -54,7 +54,7 @@ If \var{counts} is provided in \code{input}, variants are considered to be locat
 %%  \item{comp1 }{Description of 'comp1'}
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
-A list of indices, with each element indicating variants that reside in an enriched region defined in the corresponding element of the \code{input}.
+A list of matrices, with each element indicating variants that reside in an enriched region defined in the corresponding element of the \code{input}.
 }
 \references{
 %% ~put references to the literature/web site here ~

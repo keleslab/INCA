@@ -7,7 +7,7 @@ Variants that have aligned read counts exceeding the cutoff
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
-\code{varInEnRegionByPeaks} is used in the \code{\link[INCA]{varInEnrichedRegion}} function. It provides indices of variants that have aligned read counts exceeding the provided cutoff.
+\code{varInEnRegionByRC} is used in the \code{\link[INCA]{varInEnrichedRegion}} function. It quantifies whether variants have aligned read counts below the lower cutoff or exceeding the upper cutoff.
 }
 \usage{
 varInEnRegionByRC(vdata, counts, cutoff, parallel = FALSE)
@@ -24,11 +24,11 @@ varInEnRegionByRC(vdata, counts, cutoff, parallel = FALSE)
 }
   \item{cutoff}{
 %%     ~~Describe \code{cutoff} here~~
-  A numeric value.
+  A numeric vector of length 2.
 }
   \item{parallel}{
 %%     ~~Describe \code{parallel} here~~
-  A logical value specifying whether or not the computation should be done in parallel. Default is \code{FALSE}. DO NOT set \code{parallel} to \code{TRUE} unless the multicore parallel backend is registered for multiple cores, for example, \code{doMC::registerDoMC()}.
+  A logical value specifying whether or not the computation should be done in parallel. Default is \code{FALSE}. DO NOT set \code{parallel} to \code{TRUE} unless the multicore parallel backend is registered, for example, \code{doMC::registerDoMC()}.
 }
 }
 \details{
@@ -40,7 +40,7 @@ varInEnRegionByRC(vdata, counts, cutoff, parallel = FALSE)
 %%  \item{comp1 }{Description of 'comp1'}
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
-A vector of indices of variants that have aligned read counts exceeding the provided cutoff.
+A vector with values of -1 indicating variants with aligned read counts below the lower cutoff, 1 indicating variants with aligned read counts exceeding the upper cutoff, and 0 indicating variants with aligned read counts between the cutoffs.
 }
 \references{
 %% ~put references to the literature/web site here ~

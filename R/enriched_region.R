@@ -12,7 +12,7 @@ varInEnRegionByPeaks = function(vdata, peaks) {
   return(v)
 }
 
-## Variants that have aligned read counts exceeding the cutoff
+## Variants that have aligned read counts below the lower cutoff and over the upper cutoff
 varInEnRegionByRC = function(vdata, counts, cutoff, parallel=FALSE) {
   counts = convertToRle(counts)
 
@@ -50,8 +50,8 @@ varInEnrichedRegion = function(vdata, input, window=15, parallel=FALSE) {
         ls$cutoff = c(5,15); scale = 0.5
       } else if (!cases[3]) { ### cutoff not provided, peaks provided, computeRCQuantile()
         if (!cases[4]) { ### threshold not provided
-          message('threshold for computeRCQuantile() not provided. Use default `threshold` = c(0.4,0.8).')
-          ls$threshold = c(0.4,0.8)
+          message('threshold for computeRCQuantile() not provided. Use default `threshold` = c(0.1,0.8).')
+          ls$threshold = c(0.1,0.8)
         }
         ls$cutoff = computeRCQuantile(ls$counts, ls$peaks, ls$threshold, parallel)
         scale = max(ls$threshold)
