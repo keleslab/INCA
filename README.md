@@ -1,15 +1,5 @@
 # INCA
 
-## Whole-genome Sequencing (WGS) Data
-
-We extracted  the required information (Chr, Pos, Ref, Alt, Zyg) from the VCF files of WGS in HepG2 and K562 cell lines from the ENCODE project:
-  + HepG2: ENCFF713BPG
-  + K562: ENCFF752OAX
-    
-The corresponding code can be found in 'ExtractVCFInfo.py'.
-
-Note: Zyg = 0 - Homozygous reference; 1 - Heterozygous; 2 - Unknown; 3 - Homozygous alternative
-
 ## Installation
 
 ```{r}
@@ -24,6 +14,28 @@ Parallel backend is not required to register, but it will reduce computing time.
 library(doMC)
 registerDoMC()
 ```
+
+## Input
+
+INCA takes as input a variant file with the following fields: _Chr_, _Pos_, _Start_, _End_, _Ref_, _Alt_, and _Gene_. It then derives three scores for the effect of each variant on each RBP activity using available cell lines (K562 and HepG2 for this implementation): (i) ClinVar-quantiled SeqWeaver scores; (ii) a score of allelic effect on RBP binding derived from a pre-computed library of RBP eCLIP-seq experiments (Van Nostrand et al., 2020); and (iii) a gene impact score for the gene that the SNV is proximal to based on a pre-computed library of accompanying RNA-seq experiments (wild type and RBP knockdown by shRNA).
+
+Chr|Pos|Start|End|Ref|Alt|Gene
+---|---|---|---|---|---|---
+chr7|75607155|75607155|75607155|A|G|POR
+chr7|75611756|75611756|75611756|C|T|POR
+...
+chr7|75636240|75636240|75636240|T|C|STYXL1
+
+
+## Whole-genome Sequencing (WGS) Data
+
+We extracted  the required information (Chr, Pos, Ref, Alt, Zyg) from the VCF files of WGS in HepG2 and K562 cell lines from the ENCODE project:
+  + HepG2: ENCFF713BPG
+  + K562: ENCFF752OAX
+    
+The corresponding code can be found in 'ExtractVCFInfo.py'.
+
+Note: Zyg = 0 - Homozygous reference; 1 - Heterozygous; 2 - Unknown; 3 - Homozygous alternative
 
 ## Main Example in the Paper
 
