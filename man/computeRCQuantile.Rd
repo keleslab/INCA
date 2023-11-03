@@ -24,11 +24,11 @@ computeRCQuantile(counts, peaks, threshold = 0.5, parallel = FALSE)
 }
   \item{threshold}{
 %%     ~~Describe \code{threshold} here~~
-  A numeric value in [0,1]. Default is 0.5.
+  A vector of numeric values in [0,1]. Default is 0.5.
 }
   \item{parallel}{
 %%     ~~Describe \code{parallel} here~~
-  A logical value specifying whether or not the computation should be done in parallel. Default is \code{FALSE}. DO NOT set \code{parallel} to \code{TRUE} unless the multicore parallel backend is registered for multiple cores, for example, \code{doMC::registerDoMC()}.
+  A logical value specifying whether or not the computation should be done in parallel. Default is \code{FALSE}. DO NOT set \code{parallel} to \code{TRUE} unless the multicore parallel backend is registered, for example, \code{doMC::registerDoMC()}.
 }
 }
 \details{

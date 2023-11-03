@@ -35,46 +35,60 @@ alignCellGenoToVar = function(variants, CellLine1, CellLine2, CellNames) {
   return(variants)
 }
 
+## ClinVar-quantiled SeqWeaver scores
+scoreClinVarQSW = function(variants, SW, target, empirical = 0) {
+    variants = as.data.table(variants)
+    SW = as.data.table(SW)
+    SW = mapSWToVariants(variants,SW)
 
-scoreClinVarQSW = function(variants, SW, target, pathogenic=TRUE) {
-  variants = as.data.table(variants)
-  SW = as.data.table(SW)
+    if (!'INCAscore' %in% colnames(variants)) {
+        variants[,'INCAscore'] = 0
+    }
 
-  SW = mapSWToVariants(variants,SW)
-  SW = SW[,grep('HepG2|K562',colnames(SW)), with=FALSE]
-  SW = SW[,grep(paste0(target,'[|]'), colnames(SW)), with=FALSE]
-  colnames(SW) = gsub('(.+?)[|](.+?)[|].*rep(.*).hg19','\\2_\\1_SW_Rep\\3', colnames(SW)) # reformat colnames
-  variants = cbind(variants, SW)
+    if (is.numeric(empirical)) {
+        ## Load quantiles of SeqWeaver computed using ClinVar SNVs
+        directory = 'https://raw.github.com/jduan607/INCA/master/ClinVar_SeqWeaver_scores'
+        if (empirical == 0) {
+            quantiles = fread(file.path(directory,'clinvar_snv_sw_quantile.txt.gz'))
+        } else if (empirical == 1) {
+            quantiles = fread(file.path(directory,'clinvar_pathogenic_snv_sw_quantile.txt.gz'))
+        } else {
+            message('Invalid `empirical` option. Use empirical quantiles of SeqWeaver scores from all ClinVar SNVs.')
+            quantiles = fread(file.path(directory,'clinvar_snv_sw_quantile.txt.gz'))
+        }
+        ## Reformat column names to match column names in quantiles
+        colnames(SW) = gsub('(.+?)[|](.+?)[|].*rep(.*).hg19','\\2_\\1_SW_Rep\\3', colnames(SW))
+    } else {
+        ## User-provided quantiles of SeqWeaver
+        quantiles = as.data.table(empirical)
+    }
 
-  ## Load quantiles of SeqWeaver from ClinVar
-  directory = 'https://raw.github.com/jduan607/INCA/master/ClinVar_SeqWeaver_scores'
-  if (pathogenic) {
-    clinvar = fread(file.path(directory,'clinvar_pathogenic_snv_sw_quantile.txt.gz'))
-  } else {
-    clinvar = fread(file.path(directory,'clinvar_snv_sw_quantile.txt.gz'))
-  }
-  clinvar = clinvar[order(Quantile),] # smallest to largest
+    SW = SW[, grep(paste0(target,'[^A-Za-z0-9]'), colnames(SW)), with=FALSE] # extract target
+    quantiles = quantiles[order(Quantile),] # smallest to largest
 
-  ## ClinVar-quantiled SeqWeaver scores
-  q = sapply(colnames(SW), function(x) {
-    dt = SW[,x,with=FALSE]; setnames(dt, x, 'V')
-    qt = clinvar[, c(x,'Quantile'), with=FALSE]; setnames(qt, x, 'V')
-    qt = qt[dt, on=.(V<V), mult='last'][, Quantile := ifelse(is.na(Quantile), 0, Quantile)]
-    qt[,Quantile]
-  })
-  q = apply(q, 1, max)
+    ## ClinVar-quantiled SeqWeaver scores
+    QSWscore = lapply(colnames(SW), function(x) {
+      if (!x %in% colnames(SW)) {
+          message(paste(paste('Empirical/estimated quantiles of', x, 'are not provided.'),
+                        paste(x, 'is excluded for computation of ClinVar-quantiled SeqWeaver scores.'), sep='\n'))
+          rep(0, nrow(SW))
+      } else {
+          dt = SW[,x,with=FALSE]; setnames(dt, x, 'V')
+          qt = quantiles[, c(x,'Quantile'), with=FALSE]; setnames(qt, x, 'V')
+          qt = qt[dt, on=.(V<V), mult='last'][, Quantile := ifelse(is.na(Quantile), 0, Quantile)]
+          qt[,Quantile]
+      } })
+    QSWscore = apply(do.call(cbind, QSWscore), 1, max)
 
-  if (!'INCAscore' %in% colnames(variants)) {
-    variants[,'INCAscore'] = 0
-  }
-  variants[,'CVQSWscore'] = q
-  variants[,'INCAscore'] = variants[,'INCAscore'] + q
+    variants = cbind(variants, SW)
+    variants[,'QSWscore'] = QSWscore
+    variants[,'INCAscore'] = variants[,'INCAscore'] + QSWscore
 
-  return(variants)
+    return(variants)
 }
 
 
-scoreAllelicEffect = function(variants, CellLine1, CellLine2, CellNames, window=15, parallel=FALSE) {
+scoreAllelicEffect = function(variants, CellLine1, CellLine2, CellNames=paste('Cell type',1:2), window=15, parallel=FALSE) {
   variants = as.data.table(variants)
 
   if (!'INCAscore' %in% colnames(variants)) {
@@ -85,33 +99,46 @@ scoreAllelicEffect = function(variants, CellLine1, CellLine2, CellNames, window=
   } else {
     ALT = TRUE
   }
-
   data = copy(variants)[ALT,]
+
   scores = list(varInEnrichedRegion(data, CellLine1, window, parallel), ## Cell line 1
                 varInEnrichedRegion(data, CellLine2, window, parallel)) ## Cell line 2
-  scores = sapply(scores, function(x) apply(x,1,max))
+  scores = sapply(scores, function(x)
+    apply(x, 1, function(i) ifelse(any(i<0), min(i), max(i))))
 
-  enriched = apply(scores, 2, function(y) 1*(y>0))
+  ## IDR peak
+  enriched = apply(scores, 2, function(j) 1*(j==1))
   enriched = as.character(factor(paste(enriched[,1], enriched[,2], sep=':'),
-                                 levels = c('0:0','1:0','0:1','1:1'),
-                                 labels = c('Neither',CellNames,'Both')))
-  variants[ALT, 'EnrichedRegion'] = enriched ## add to data
+                                  levels = c('0:0','1:0','0:1','1:1'),
+                                  labels = c('Neither',CellNames,'Both')))
+
+  ## Read counts/non-IDR peak
+  enriched2 = apply(scores, 2, function(j) ifelse(j<0, -1, ifelse(j>0,1,0)))
+  enriched2 = factor(paste(enriched2[,1], enriched2[,2], sep=':'))
+  if (any(scores<0)) {
+    enriched[enriched2=='1:-1' & enriched=='Neither'] = CellNames[1]
+    enriched[enriched2=='-1:1' & enriched=='Neither'] = CellNames[2]
+  } else {
+    enriched[enriched2=='1:0' & enriched=='Neither'] = CellNames[1]
+    enriched[enriched2=='0:1' & enriched=='Neither'] = CellNames[2]
+  }
+  enriched[enriched2=='1:1' & enriched=='Neither'] = 'Both'
 
   AEscore = rep(0,nrow(variants))
   AEscore[ALT][enriched %in% CellNames] = apply(scores, 1, max)[enriched %in% CellNames]
+  variants[ALT, 'EnrichedRegion'] = enriched
   variants[,'AEscore'] = AEscore
   variants[, 'INCAscore'] = variants[,'INCAscore'] + AEscore
 
   return(variants)
 }
 
-
-scoreVarImpactOnGE = function(variants, CellLine1, CellLine2, CellNames, window=15, parallel=FALSE) {
+## Scores for the RBP-variant impact on the gene expression
+scoreVarImpactOnGE = function(variants, CellLine1, CellLine2, CellNames=paste('Cell type',1:2)) {
   variants = as.data.table(variants)
 
-  ## One gene in each row
-  variants[, Gene := ifelse(gsub('\\s+','',Gene)=='','-',Gene)]
-  variants[Gene=='', 'Gene'] = '-'
+  ## Separate rows to have one gene in each row
+  variants[, Gene := ifelse(gsub('\\s+','',Gene)=='','-', gsub('\\s+','',Gene))]
   variants = variants[, .(Gene = unlist(strsplit(Gene, '[^[:alnum:]\\-\\_\\.]', perl=TRUE))),
                       by = eval(grep('^Gene$', colnames(variants), invert=TRUE, value=TRUE))]
 
@@ -141,19 +168,25 @@ scoreVarImpactOnGE = function(variants, CellLine1, CellLine2, CellNames, window=
   DEgene = as.character(factor(paste(de[[1]], de[[2]], sep=':'),
                                levels = c('NA:NA','0:0','1:0','0:1','1:1'),
                                labels = c(NA,'Neither',CellNames,'Both')))
-  variants[ALT, 'DEgene'] = DEgene ## add to data
 
   ## (ii) Whether the cell line with the expression change has a peak covering the location of the variant
   if (length(CellLine1) > 1 & length(CellLine2) > 1) {
-    scores = list(varInEnrichedRegion(data, CellLine1[-1], window, parallel), ## Cell line 1
-                  varInEnrichedRegion(data, CellLine2[-1], window, parallel)) ## Cell line 2
+    scores = list(varInEnrichedRegion(data, CellLine1[-1]), ## Cell line 1
+                  varInEnrichedRegion(data, CellLine2[-1])) ## Cell line 2
     scores = sapply(scores, function(x) apply(x,1,max))
 
-    enriched = apply(scores, 2, function(y) 1*(y>0))
+    ## IDR peak
+    enriched = apply(scores, 2, function(j) 1*(j==1))
     enriched = as.character(factor(paste(enriched[,1], enriched[,2], sep=':'),
                                    levels = c('0:0','1:0','0:1','1:1'),
                                    labels = c('Neither',CellNames,'Both')))
-    variants[ALT, 'DEbinding'] = enriched ## add to data
+
+    ## non-IDR peak
+    enriched2 = apply(scores, 2, function(j) 1*(j>0))
+    enriched2 = factor(paste(enriched2[,1], enriched2[,2], sep=':'))
+    enriched[enriched2=='1:0' & enriched=='Neither'] = CellNames[1]
+    enriched[enriched2=='0:1' & enriched=='Neither'] = CellNames[2]
+    enriched[enriched2=='1:1' & enriched=='Neither'] = 'Both'
   } else if ('EnrichedRegion' %in% colnames(variants)) {
     enriched = variants[ALT,EnrichedRegion]
   } else {
@@ -164,6 +197,8 @@ scoreVarImpactOnGE = function(variants, CellLine1, CellLine2, CellNames, window=
 
   DEscore[ALT][DEgene %in% CellNames] = 1
   DEscore[ALT][DEgene %in% CellNames & DEgene==enriched] = 2
+  variants[ALT, 'DEgene'] = DEgene
+  variants[ALT, 'DEbinding'] = enriched
   variants[, 'DEscore'] = DEscore
   variants[, 'INCAscore'] = variants[,'INCAscore'] + DEscore
 
